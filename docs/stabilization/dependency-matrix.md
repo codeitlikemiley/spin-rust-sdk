@@ -312,11 +312,22 @@ Host Spin pass condition is different: root lock `wasmtime@50.0.0` and `wit-comp
 - `cargo +1.99.0 check --no-default-features --features json --locked`
 - `cargo +1.99.0 check --no-default-features --features postgres4-types --locked`
 - `cargo +1.94.0 check -p spin-sdk --locked` — library and `wasip3` 0.9.0 compiled. Dev-dependency Wasmtime 50 was not built by that command.
+- `cargo +1.99.0 audit` with cargo-audit 0.22.2 against the advisory database (1352 advisories) exited 0 after the lockfile bumps below. The same command failed on the previous lock with `RUSTSEC-2026-0385` (`ctutils` 0.4.2) and `RUSTSEC-2026-0381` (`webpki-roots` 1.0.9). `cargo +1.99.0 test -p spin-sdk --all-features --locked` was run again after the bumps: 31 lib tests passed and 33 doctests passed (8 ignored).
+
+Lock-only bumps, still inside the existing caret requirements (`digest` → `ctutils` ^0.4, `wasmtime-wasi-http` 50 → `webpki-roots` ^1.0.7, `rand` 0.10.1 → `chacha20` ^0.10.0, `spin-sdk` → `tokio` ^1.48):
+
+| crate | previous | locked now | why |
+| --- | --- | --- | --- |
+| `ctutils` | 0.4.2 | 0.4.5 | `RUSTSEC-2026-0385`, patched in >=0.4.4 (2026-10-23). 0.4.5 is the published fix. |
+| `webpki-roots` | 1.0.9 | 1.0.11 | `RUSTSEC-2026-0381`, patched in >=1.0.10. 1.0.11 published 2026-10-23. |
+| `tokio` | 1.52.3 | 1.54.1 | `RUSTSEC-2026-0386` (unsound). Patched in >=1.51.6,<1.52.0 or >=1.53.3. 1.54.1 published 2026-10-21. |
+| `chacha20` | 0.10.0 | 0.10.2 | 0.10.0 is yanked. Newest non-yanked 0.10.x is 0.10.2 (2026-08-27). |
+
+`.cargo/audit.toml` still ignores `RUSTSEC-2026-0204` and `RUSTSEC-2026-0258`. Those ignores were inherited from upstream v7 and were not re-evaluated.
 
 ## Not tested
 
 - `spin` CLI binary, `spin build --up`, and any example `spin.toml` runtime. Spin is not installed here.
-- `cargo audit`. `.cargo/audit.toml` still ignores `RUSTSEC-2026-0204` and `RUSTSEC-2026-0258`. Those ignores were inherited from upstream v7. This PR did not re-evaluate them.
 - Compiling A3, A4, A5, A6, or A7 after the recommended edits.
 - `leptos` 0.9 prereleases.
 - Whether published `leptos-wasi-runtime` 0.4.2 bytes match git `6727a21`.
