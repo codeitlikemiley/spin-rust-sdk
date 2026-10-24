@@ -2,6 +2,8 @@
 
 Agent 2 audit of the WASI HTTP / Spin / Leptos stack. This file is the reviewable handoff for repos this agent does not own. Only `codeitlikemiley/spin-rust-sdk` is modified here.
 
+Guest crates that git-depend on this fork should pin `rev = "3cf30012b50a1afb750dac3d28aa6da4a32c3468"` on branch `gol/wasi-dep-stabilization-1365`. That commit is the dependency bump. Later doc-only commits do not change it. After the PR merges, replace the pin with the merge commit if `main` is not that SHA.
+
 ## How versions were verified
 
 Resolved versions come from `Cargo.lock`, `cargo metadata --locked --format-version 1`, and `cargo tree --locked`. Declared requirements are quoted only to explain why the resolver stopped where it did.
@@ -144,9 +146,9 @@ wasmparser = "0.262.0"
 
 Upstream CI `RUST_VERSION` is `1.97`, which is Wasmtime 50's MSRV. Leave historical `spin-sdk = "2.2.0"` test components alone.
 
-After this SDK PR merges, `examples/http-middleware/{yelling,animal-fact,app}` track `spinframework/spin-rust-sdk` `branch = "main"`, which will not contain `spawn_local` until upstream takes the same bump. `examples/http-middleware/yelling/src/lib.rs` calls `spin_sdk::wasip3::spawn`. Point those three git deps at this fork's merge commit, or wait for an upstream SDK PR, and rename that call to `spawn_local`.
+After this SDK PR merges, `examples/http-middleware/{yelling,animal-fact,app}` track `spinframework/spin-rust-sdk` `branch = "main"`, which will not contain `spawn_local` until upstream takes the same bump. `examples/http-middleware/yelling/src/lib.rs` calls `spin_sdk::wasip3::spawn`. Point those three git deps at `3cf30012b50a1afb750dac3d28aa6da4a32c3468`, or wait for an upstream SDK PR, and rename that call to `spawn_local`.
 
-`examples/http-rust` and `examples/open-ai-rust` already declare `spin-sdk = "7.0.0"`. That crates.io crate is `wasip3` 0.7.1. Switch them to the merge commit only when they need 0.9.
+`examples/http-rust` and `examples/open-ai-rust` already declare `spin-sdk = "7.0.0"`. That crates.io crate is `wasip3` 0.7.1. Switch them to `3cf30012b50a1afb750dac3d28aa6da4a32c3468` only when they need 0.9.
 
 ### A3 `codeitlikemiley/wasi-http-middleware`
 
@@ -191,7 +193,7 @@ wit-bindgen = { version = "=0.62.0", features = ["async-spawn"] }
 `crates/wasi-auth/Cargo.toml` spin-sdk git dep, keeping the existing feature list:
 
 ```toml
-spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "<merge commit of this PR>", version = "7.0.0", default-features = false, features = ["json", "pg"], optional = true }
+spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "3cf30012b50a1afb750dac3d28aa6da4a32c3468", version = "7.0.0", default-features = false, features = ["json", "pg"], optional = true }
 ```
 
 `crates/wasi-auth/src/spin_grpc.rs`: `wasip3::wit_bindgen::spawn` becomes `wasip3::spawn_local`.
@@ -243,7 +245,7 @@ wasm-bindgen = { version = "=0.2.129", optional = true }
 `spin-sdk = "7.0.0"` is crates.io, which is `wasip3` 0.7.1 and `spawn`, not `spawn_local`. If the template calls `wasip3::spawn` through the SDK, it will not compile against 0.9 until spin-sdk 7.0.0 grows that re-export upstream. Until an upstream SDK release exists, template the git rev of this PR:
 
 ```toml
-spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "<merge commit of this PR>", version = "7.0.0", optional = true }
+spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "3cf30012b50a1afb750dac3d28aa6da4a32c3468", version = "7.0.0", optional = true }
 ```
 
 Set `leptos_meta`, `leptos_router`, and `leptos_macro` from `cargo update -p leptos` after the 0.8.22 bump. `leptos` 0.8.22 requires `leptos_macro` `=0.8.19`. This agent did not open a fresh leptos app, so template compile is **UNVERIFIED**.
@@ -257,7 +259,7 @@ Root `Cargo.toml`:
 ```toml
 rust-version = "1.94"
 wasip3 = { version = "=0.9.0", features = ["http-compat"], optional = true }
-spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "<merge commit of this PR>", version = "7.0.0", optional = true }
+spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "3cf30012b50a1afb750dac3d28aa6da4a32c3468", version = "7.0.0", optional = true }
 ```
 
 Replace the comment that names `leptos-wasi-runtime` `0.4.2-rc.1` and `wasip3` 0.7 as the shared final binding. The final WIT package is still `wasi:http@0.3.0`; the binding crate target is `wasip3` 0.9.0.
@@ -269,7 +271,7 @@ rust-version = "1.94"
 leptos = { version = "0.8.22", default-features = false }
 server_fn = { version = "0.8.13", default-features = false }
 leptos_wasi = { package = "leptos-wasi-runtime", version = "=0.4.2", default-features = false, features = ["wasip3", "islands-router", "tracing"], optional = true }
-spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "<merge commit of this PR>", version = "7.0.0", optional = true }
+spin-sdk = { git = "https://github.com/codeitlikemiley/spin-rust-sdk", rev = "3cf30012b50a1afb750dac3d28aa6da4a32c3468", version = "7.0.0", optional = true }
 wasip3 = { version = "=0.9.0", features = ["http-compat"], optional = true }
 wit-bindgen = { version = "=0.62.0", features = ["async-spawn", "inter-task-wakeup"], optional = true }
 wasm-bindgen = { version = "=0.2.129", optional = true }
