@@ -1,3 +1,6 @@
+// tonic's generated service traits trip Rust 1.99 clippy in code this crate does not author.
+#![allow(clippy::result_large_err, clippy::double_must_use)]
+
 use spin_sdk::http::{IntoResponse, Request, grpc};
 use spin_sdk::http_service;
 

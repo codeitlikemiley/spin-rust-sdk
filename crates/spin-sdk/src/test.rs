@@ -19,7 +19,9 @@ use {
         component::{Component, Linker, ResourceTable},
     },
     wasmtime_wasi::{WasiCtx, WasiCtxBuilder, WasiCtxView, WasiView},
-    wasmtime_wasi_http::{WasiHttpCtx, p3::WasiHttpView},
+    // Wasmtime 50 moved the HTTP view types to the crate root. `p3::` still
+    // owns the linker helpers and the `wasi:http/service` bindings.
+    wasmtime_wasi_http::{WasiHttpCtx, WasiHttpCtxView, WasiHttpView, default_hooks},
 };
 
 struct Ctx {
@@ -29,9 +31,9 @@ struct Ctx {
 }
 
 impl WasiHttpView for Ctx {
-    fn http(&mut self) -> wasmtime_wasi_http::p3::WasiHttpCtxView<'_> {
-        wasmtime_wasi_http::p3::WasiHttpCtxView {
-            hooks: wasmtime_wasi_http::p3::default_hooks(),
+    fn http(&mut self) -> WasiHttpCtxView<'_> {
+        WasiHttpCtxView {
+            hooks: default_hooks(),
             table: &mut self.table,
             ctx: &mut self.wasi_http,
         }
@@ -102,7 +104,11 @@ async fn simple_http() -> Result<()> {
 
     let (mut store, linker) = store_and_linker()?;
 
+    // Wasmtime 50 requires the embedder hooks when turning an `http::Request`
+    // into a `wasi:http@0.3.0` request. The default hooks match the view used
+    // by the store below.
     let (request, fut) = wasmtime_wasi_http::p3::Request::from_http(
+        default_hooks(),
         crate::http::Request::post("http://localhost:3000").body(crate::http::FullBody::new(
             bytes::Bytes::copy_from_slice(b"test"),
         ))?,
