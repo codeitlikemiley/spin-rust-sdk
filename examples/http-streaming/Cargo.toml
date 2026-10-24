@@ -2,7 +2,7 @@
 name = "streaming"
 description = "Demonstrates streaming processing of requests and responses"
 version = "0.1.0"
-rust-version = "1.90"
+rust-version.workspace = true
 edition = "2024"
 
 [lib]

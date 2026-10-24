@@ -1,3 +1,6 @@
+// tonic's generated service traits trip Rust 1.99 clippy in code this crate does not author.
+#![allow(clippy::result_large_err, clippy::double_must_use)]
+
 pub mod route_guide {
     tonic::include_proto!("routeguide");
 }
@@ -101,7 +104,7 @@ impl RouteGuide for Svc {
 
         let (mut tx, rx) = futures::channel::mpsc::channel(1024);
 
-        wasip3::spawn(async move {
+        wasip3::spawn_local(async move {
             if let Err(e) = list_impl(&mut tx, bounds).await {
                 _ = tx.send(Err(as_status(e))).await;
             }
@@ -227,7 +230,7 @@ impl RouteGuide for Svc {
 
         let (mut tx, rx) = futures::channel::mpsc::channel(1024);
 
-        wasip3::spawn(async move {
+        wasip3::spawn_local(async move {
             while let Ok(Some(message)) = req_stm.message().await {
                 if let Err(e) = insert_and_reply(&conn, &mut tx, message).await {
                     _ = tx.send(Err(as_status(e))).await;
